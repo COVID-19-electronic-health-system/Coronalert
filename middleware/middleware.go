@@ -2,21 +2,30 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"../models"
 )
 
 var phoneNumbers []models.Number
 
-// SendSMS sends update to subscribers
-func SendSMS(w http.ResponseWriter, r *http.Request) {
+// StartPolling starts a cycle to send texts every 180 minutes
+func StartPolling() {
+	for {
+		time.Sleep(30 * time.Minute)
+		go SendSMS()
+	}
+}
 
+// Subscribe subscribes a user to the message list
+func Subscribe(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
 	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO maybe remove when deploying (but behind API gateway soo...?)
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
@@ -24,13 +33,40 @@ func SendSMS(w http.ResponseWriter, r *http.Request) {
 
 	var number models.Number
 	err := json.NewDecoder(r.Body).Decode(&number)
-
 	if err != nil {
 		panic(err)
 	}
 
 	phoneNumbers = append(phoneNumbers, number)
+	fmt.Println("subscribed to SMS service...")
+}
 
+// Unsubscribe unsubscribes a user from the notifications list
+func Unsubscribe(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	var number models.Number
+	err := json.NewDecoder(r.Body).Decode(&number)
+	if err != nil {
+		panic(err)
+	}
+
+	// TOOD make this more elegant, perhaps use a map instead of a slice
+	// NOTE we will likely eventually persist to a database, so not a huge worry for now
+	for i := 0; i < len(phoneNumbers); i++ {
+		if phoneNumbers[i] == number {
+			phoneNumbers = append(phoneNumbers[:i], phoneNumbers[i+1])
+		}
+	}
+
+	fmt.Println("unsubscribed from SMS service...")
+}
+
+// SendSMS sends update to subscribers
+func SendSMS() {
 	accountSid := os.Getenv("TWILIO_ACCOUNT_SID")
 	authToken := os.Getenv("TWILIO_AUTH_TOKEN")
 	urlStr := "https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json"

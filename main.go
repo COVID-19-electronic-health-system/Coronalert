@@ -5,10 +5,13 @@ import (
 	"log"
 	"net/http"
 
+	"./middleware"
 	"./router"
 )
 
 func main() {
+
+	go middleware.StartPolling()
 
 	r := router.Router()
 	fmt.Println("server running on port 8080")

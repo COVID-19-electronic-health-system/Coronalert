@@ -9,7 +9,8 @@ import (
 func Router() *mux.Router {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/sendSMS", middleware.SendSMS).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/subscribe", middleware.Subscribe).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/unsubscribe", middleware.Unsubscribe).Methods("POST", "OPTIONS")
 
 	return router
 }
