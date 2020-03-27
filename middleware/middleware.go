@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -13,17 +12,24 @@ import (
 	"../models"
 )
 
+var phoneNumbers []models.Number
+
 // SendSMS sends update to subscribers
 func SendSMS(w http.ResponseWriter, r *http.Request) {
 
-	var phoneNumbers models.PhoneNumbers
-	err := json.NewDecoder(r.Body).Decode(&phoneNumbers)
+	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO maybe remove when deploying (but behind API gateway soo...?)
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type") // TODO maybe remove when deploying
+
+	var number models.Number
+	err := json.NewDecoder(r.Body).Decode(&number)
 
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(phoneNumbers.PhoneNumbers[0].Number)
+	phoneNumbers = append(phoneNumbers, number)
 
 	accountSid := os.Getenv("TWILIO_ACCOUNT_SID")
 	authToken := os.Getenv("TWILIO_AUTH_TOKEN")
@@ -32,9 +38,9 @@ func SendSMS(w http.ResponseWriter, r *http.Request) {
 	notifications := [2]string{"Test Notification 1",
 		"Test Notification 2"}
 
-	for i := 0; i < len(phoneNumbers.PhoneNumbers); i++ {
+	for i := 0; i < len(phoneNumbers); i++ {
 		msgData := url.Values{}
-		msgData.Set("To", phoneNumbers.PhoneNumbers[i].Number)
+		msgData.Set("To", phoneNumbers[i].Number)
 		msgData.Set("From", "12018013744")
 		msgData.Set("Body", notifications[rand.Intn(len(notifications))])
 		msgDataReader := *strings.NewReader(msgData.Encode())
