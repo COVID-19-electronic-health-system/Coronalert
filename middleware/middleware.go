@@ -18,8 +18,9 @@ var phoneNumbers []models.Number
 
 // StartPolling starts a cycle to send texts every 180 minutes
 func StartPolling() {
+	log.Println("starting notification service...")
 	for {
-		time.Sleep(30 * time.Minute)
+		time.Sleep(180 * time.Minute)
 		go SendSMS()
 	}
 }
@@ -70,9 +71,12 @@ func SendSMS() {
 	accountSid := os.Getenv("TWILIO_ACCOUNT_SID")
 	authToken := os.Getenv("TWILIO_AUTH_TOKEN")
 	urlStr := "https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json"
+	log.Println("requesting URL at", urlStr)
 
-	notifications := [2]string{"Test Notification 1",
-		"Test Notification 2"}
+	notifications := [4]string{"Did you know? COVID-19 was first detected in Wuhan City, Hubei Province, China.",
+		"Did you know? COVID-19 is not the same as typical coronaviruses commonly circulated amongst humans",
+		"Did you know? Social distancing (avoiding large crowds) is the undeniable best way to prevent the spread of COVID-19",
+		"If you experience symptoms of COVID-19, do not immediately head to the ER. Use CoronaTracker to monitor your symptoms and make a more informed decision"}
 
 	for i := 0; i < len(phoneNumbers); i++ {
 		msgData := url.Values{}
