@@ -1,7 +1,7 @@
 package router
 
 import (
-	"../middleware"
+	"github.com/COVID-19-electronic-health-system/Coronalert/middleware"
 	"github.com/gorilla/mux"
 )
 

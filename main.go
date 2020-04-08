@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"./middleware"
-	"./router"
+	"github.com/COVID-19-electronic-health-system/Coronalert/middleware"
+	"github.com/COVID-19-electronic-health-system/Coronalert/router"
 )
 
 func main() {

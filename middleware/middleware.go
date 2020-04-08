@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"../models"
+	"github.com/COVID-19-electronic-health-system/Coronalert/models"
 )
 
 var phoneNumbers []models.Number
