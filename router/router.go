@@ -11,6 +11,7 @@ func Router() *mux.Router {
 
 	router.HandleFunc("/api/subscribe", middleware.Subscribe).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/unsubscribe", middleware.Unsubscribe).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/", middleware.HealthCheck).Methods("GET", "OPTIONS")
 
 	return router
 }

@@ -16,6 +16,12 @@ import (
 
 var phoneNumbers []models.Number
 
+// HealthCheck simply returns a response that you successfully hit the API
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Server", "Coronalert Web Server")
+	w.WriteHeader(200)
+}
+
 // StartPolling starts a cycle to send texts every 180 minutes
 func StartPolling() {
 	log.Println("starting notification service...")
