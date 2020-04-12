@@ -1,0 +1,5 @@
+# Any .zip files from building lambdas
+*.zip
+
+# Any built Go files for lambdas or otherwise
+*/main
