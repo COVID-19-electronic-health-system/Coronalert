@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -16,10 +17,10 @@ import (
 
 // Response from API
 type Response struct {
-	Message string `json:"message"`
+	PhoneNumber string `json:"phoneNumber"`
 }
 
-// Request struct - outgoing HTTP request
+// Request struct - incoming HTTP request
 type Request struct {
 	PhoneNumber string `json:"phoneNumber"`
 }
@@ -47,6 +48,10 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		}, err
 	}
 
+	bodyResponse := Response{
+		PhoneNumber: bodyRequest.PhoneNumber,
+	}
+
 	coronalertDB := client.Database("Coronalert")
 	phoneNumbersCollection := coronalertDB.Collection("PhoneNumbers")
 
@@ -59,9 +64,8 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		}, err
 	}
 
-	requestPhoneNumber = Request.PhoneNumber
-	result, err = phoneNumbersCollection.DeleteOne(ctx, bson.M{
-		{"phoneNumber": requestPhoneNumber},
+	_, err = phoneNumbersCollection.DeleteOne(ctx, bson.D{
+		{Key: "phoneNumber", Value: bodyRequest.PhoneNumber},
 	})
 	if err != nil {
 		log.Fatal("error deleting phone number in collection")
@@ -71,8 +75,8 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		}, err
 	}
 
-	bodyResponse := Response{
-		Message: "Phone number deleted",
+	bodyResponse = Response{
+		PhoneNumber: bodyRequest.PhoneNumber,
 	}
 
 	response, err := json.Marshal(&bodyResponse)
