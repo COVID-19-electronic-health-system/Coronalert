@@ -48,12 +48,12 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		}, err
 	}
 
-	bodyResponse := Response{
-		PhoneNumber: bodyRequest.PhoneNumber,
-	}
-
 	coronalertDB := client.Database("Coronalert")
 	phoneNumbersCollection := coronalertDB.Collection("PhoneNumbers")
+
+	bodyRequest := Request{
+		PhoneNumber: "",
+	}
 
 	err = json.Unmarshal([]byte(request.Body), &bodyRequest)
 	if err != nil {
@@ -75,7 +75,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		}, err
 	}
 
-	bodyResponse = Response{
+	bodyResponse := Response{
 		PhoneNumber: bodyRequest.PhoneNumber,
 	}
 
