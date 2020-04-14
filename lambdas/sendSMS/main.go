@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -12,6 +13,10 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/lambda"
+
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/kms"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -23,7 +28,7 @@ var twilioSID = os.Getenv("TWILIO_ACCOUNT_SID")
 var twilioAuthToken = os.Getenv("TWILIO_AUTH_TOKEN")
 var twilioPhoneNumber = os.Getenv("TWILIO_PHONE_NUMBER")
 
-var twilioURL = "https://api.twilio.com/2010-04-01/Accounts/" + twilioSID + "/Messages.json"
+var twilioURL string
 
 var notifications = [4]string{
 	"Did you know? COVID-19 was first detected in Wuhan City, Hubei Province, China.",
@@ -34,6 +39,30 @@ var notifications = [4]string{
 
 type phoneNumber struct {
 	Number string `bson:"phoneNumber"`
+}
+
+func init() {
+	mongoURI = decrypt(mongoURI)
+	twilioSID = decrypt(twilioSID)
+	twilioAuthToken = decrypt(twilioAuthToken)
+	twilioURL = "https://api.twilio.com/2010-04-01/Accounts/" + twilioSID + "/Messages.json"
+}
+
+func decrypt(encrypted string) string {
+	kmsClient := kms.New(session.New())
+	decodedBytes, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		panic(err)
+	}
+	input := &kms.DecryptInput{
+		CiphertextBlob: decodedBytes,
+	}
+	response, err := kmsClient.Decrypt(input)
+	if err != nil {
+		panic(err)
+	}
+	// Plaintext is a byte array, so convert to string
+	return string(response.Plaintext[:])
 }
 
 func sendNotification(phoneNumber string) error {
