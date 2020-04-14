@@ -1,33 +1,25 @@
 # Basic SMS Notification Service
 
-Our notifications service.
+CoronaTracker's notifications service.
 
 ## Curent state
-- Subscribe functionality running on an EC2 instance on @Carter Klein's private AWS account
-- Data is ephemeral, stored only while the instance is running
+- Transitioning EC2 instances on @Carter Klein's personal AWS profile to a secure CoronaTracker cloud environment for launch
 
-## Near-term state
-- Running this Dockerized service on an EC2 instance behind an API Gateway, on a collaborative AWS account
-- Data is persisted to a MongoDB cluster and encrypted at rest
+# Prerequisites
+- Request access to the CoronaTracker database (approval dependent on prior commits to other CoronaTracker repositories) [here](https://docs.google.com/spreadsheets/d/1Y_l4oq_32q1IMhpLyFmFAF1xnKSWQz7TPSX27ndveuQ/edit#gid=0)
+	- **NOTE:** When signing up for AWS, your username/password combination will be in the signup email you receive
+- Create accounts for AWS, MongoDB, Twilio
+	- **NOTE:** In AWS, ensure you're always located in N. Virginia (us-east-1)
+- Ensure Go (we're on 1.13) is installed
+- Set `MONGODB_URI` environment variable locally. This can be found in MongoDB Atlas -> Clusters -> Connect (in the box of the cluster your want) -> connect your application (see [here](https://studio3t.com/knowledge-base/articles/connect-to-mongodb-atlas/))
+- Set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` environment variables locally. This can befound on the Twilio dashboard under "Account SID" and "Auth Token," respectively
 
-## Future State:
-- Run this service on a Lambda, or EC2 instances behind an autoscaling group
-- iOS/Android push notifications
-- Much more fleshed-out and nuanced notifications dependent on location, age, etc
-
-# Install/run locally with Postman
-
-### Prerequisites
-1. Install Go
-2. Set up your environment with `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN` - for the time being, ask @Carter Klein
-
-1. `git clone https://github.com/COVID-19-electronic-health-system/BasicNotificationService`
-2. `cd BasicNotificationServce`
-3. `go get -u ./...`
-4. `go run main.go`
-5. To ensure it's working, in Postman, send a POST request to `localhost:8080/api/subscribe`:
-```json
-{
-	"number": "1234567890"
-}
-```
+# Creating a new lambda function
+- Create new AWS Lambda (we would prefer using Go 1.x runtime). Use the "Simple microservices permissions" policy
+- Set the `MONGODB_URI` environment variable (TODO: encrypt in transit)
+- Open permissions -> <your-lambda-role> and attach the `coronalert-lambda-policy` to it
+- Add this lambda to the CoronaTracker VPC, in the two private application subnets
+- Create a representative test for the lambda for future use
+- Attach the Coronalert API gateway as a trigger, with IAM security
+- Remove the `ANY` type (see Actions button), and add requests specific to your lambda
+- Deploy lambda (see Actions button) using the default deployment
