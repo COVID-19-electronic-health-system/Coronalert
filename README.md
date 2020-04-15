@@ -23,3 +23,18 @@ CoronaTracker's notifications service.
 - Attach the Coronalert API gateway as a trigger, with IAM security
 - Remove the `ANY` type (see Actions button), and add requests specific to your lambda
 - Deploy lambda (see Actions button) using the default deployment
+
+**NOTE:** When building a Lambda function in Golang, follow these steps:
+
+### OSX
+1. Build your `main.go` using `GOOS=linux go build -o main`
+2. Zip the executable `main` using `zip main.zip main`
+3. Upload `main.zip` to the lambda
+
+### Windows
+1. Install `build-lambda-zip` using `go get -u github.com/aws/aws-lambda-go/cmd/build-lambda-zip`
+2. Build your `main.go` using `GOOS=linux go build -o main`
+3. Zip the executable `main` using `~/go/bin/build-lambda-zip.exe main` (**~/go/bin/ could be different depending on your file system layout**)
+4. Upload `main.zip` to the lambda
+
+Golang is new to having native support by AWS Lambda, therefore you aren't yet able to edit lambdas inline.
