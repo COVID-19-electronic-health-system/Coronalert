@@ -30,8 +30,9 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(
 		os.Getenv("MONGODB_URI"),
 	))
+
 	if err != nil {
-		log.Fatal("Connection error:", err)
+		log.Println("Connection error: ", err)
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
 			StatusCode: 500,
@@ -41,7 +42,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	defer client.Disconnect(ctx)
 	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		log.Fatal("Ping error:", err)
+		log.Println("Ping error: ", err)
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
 			StatusCode: 500,
@@ -57,7 +58,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 
 	err = json.Unmarshal([]byte(request.Body), &bodyRequest)
 	if err != nil {
-		log.Fatal("error in unmarshal")
+		log.Println("error in unmarshal")
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
 			StatusCode: 500,
@@ -68,7 +69,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		{Key: "phoneNumber", Value: bodyRequest.PhoneNumber},
 	})
 	if err != nil {
-		log.Fatal("error deleting phone number in collection")
+		log.Println("error deleting phone number in collection")
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
 			StatusCode: 500,
@@ -81,7 +82,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 
 	response, err := json.Marshal(&bodyResponse)
 	if err != nil {
-		log.Fatal("error in marshal")
+		log.Println("error in marshal")
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
 			StatusCode: 500,
