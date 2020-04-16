@@ -19,14 +19,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-// Response from API
-type Response struct {
-	PhoneNumber string `json:"phoneNumber"`
-}
-
-// Request struct - incoming HTTP request
-type Request struct {
-	PhoneNumber string `json:"phoneNumber"`
+type phoneNumber struct {
+	Number string `json:"phoneNumber"`
 }
 
 var mongoDBURI = os.Getenv("MONGODB_URI")
@@ -79,11 +73,9 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	//				END MONGODB SETUP					//
 
 	//				START SUBSCRIBE						//
-	bodyRequest := Request{
-		PhoneNumber: "",
-	}
+	requestBody := phoneNumber{}
 
-	err = json.Unmarshal([]byte(request.Body), &bodyRequest)
+	err = json.Unmarshal([]byte(request.Body), &requestBody)
 	if err != nil {
 		log.Println("error in unmarshal")
 		return events.APIGatewayProxyResponse{
@@ -92,9 +84,28 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		}, err
 	}
 
-	_, err = phoneNumbersCollection.InsertOne(ctx, bson.D{
-		{Key: "phoneNumber", Value: bodyRequest.PhoneNumber},
-	})
+	document := bson.D{
+		{Key: "_id", Value: requestBody.Number},
+		{Key: "phoneNumber", Value: requestBody.Number},
+	}
+
+	phoneNumber := phoneNumber{}
+	err = phoneNumbersCollection.FindOne(ctx, document).Decode(&phoneNumber)
+	if err != nil && err != mongo.ErrNoDocuments {
+		log.Println("error checking for phone number in collection")
+		return events.APIGatewayProxyResponse{
+			Body:       err.Error(),
+			StatusCode: 500,
+		}, err
+	}
+	if err == nil {
+		log.Println("phone number already subscribed")
+		return events.APIGatewayProxyResponse{
+			StatusCode: 409,
+		}, nil
+	}
+
+	_, err = phoneNumbersCollection.InsertOne(ctx, document)
 	if err != nil {
 		log.Println("error adding to collection")
 		return events.APIGatewayProxyResponse{
@@ -103,11 +114,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		}, err
 	}
 
-	bodyResponse := Response{
-		PhoneNumber: bodyRequest.PhoneNumber,
-	}
-
-	response, err := json.Marshal(&bodyResponse)
+	response, err := json.Marshal(&requestBody)
 	if err != nil {
 		log.Println("error in marshal")
 		return events.APIGatewayProxyResponse{
