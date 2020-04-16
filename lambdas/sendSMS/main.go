@@ -23,19 +23,30 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
+var notifications = [15]string{
+	"Did you know? COVID-19 was first detected in Wuhan City, Hubei Province, China.",
+	"Did you know? COVID-19 is not the same as typical coronaviruses commonly circulated amongst humans.",
+	"Did you know? Social distancing (avoiding large crowds) is the undeniable best way to prevent the spread of COVID-19.",
+	"Did you know? In COVID-19, 'CO' stands for 'corona', 'VI' for 'virus', and 'D' for disease.",
+	"Did you know? The official name of the virus is SARS-CoV-2 (Severe Acute Respiratory Syndrome Coronavirus 2). The original SARS-CoV emerged in 2002 and was responsible for the SARS outbreak. While the death rate of SARS was higher than COVID-19, it infected and killed far fewer people. There have been no cases of SARS since 2003.",
+	"Did you know? While SARS-CoV-2 originated in a wild animal market in Wuhan, China, the risk of catching a new coronavirus from animals remains very low. However, care should always be taken when handling raw meat, milk, or animal organs. Always ensure foods are properly cooked before consuming.",
+	"Did you know? There is only one documented case of a dog being infected with SARS-CoV-2, so there is little evidence that pets can spread the disease. However, you should still wash your hands after handling pets, especially after walking your dog. Dogs could still contact contaminated surfaces and carry the virus externally.",
+	"Did you know? It is safe to receive packages from areas where COVID-19 has been reported. The likelihood of an infected person contaminating commercial goods is low and the risk of catching the virus that causes COVID-19 from a package that has been moved, travelled, and exposed to different conditions and temperature is also low.",
+	"Did you know? In order to fight a virus, your body’s immune system must be able to recognize it and destroy it. Viruses cannot be “killed” with medication because they are not alive.",
+	"Did you know? Viruses are not living organisms. Unlike bacteria, viruses are unable to replicate and live on their own. They must infect a host to survive and reproduce.",
+	"Did you know? The coronavirus is roughly 120nm in diameter. For reference, you could fit about 2,500 virus particles end to end on a single grain of salt!",
+	"Did you know? Around 1 out of every 6 people who gets COVID-19 becomes seriously ill and develops difficulty breathing. Older people, and those with underlying medical problems like high blood pressure, heart problems or diabetes, are more likely to develop serious illness. People with fever, cough and difficulty breathing should seek medical attention.",
+	"Did you know? Studies to date suggest that COVID-19 is mainly transmitted through contact with respiratory droplets rather than through the air.",
+	"Did you know? The incubation period for COVID-19 ranges from 1 to 14 days, meaning it can take this long to start showing symptoms after initial infection. Some studies have shown that you are the most contagious during the early stages of the disease. This is why social distancing is so important to prevent asymptomatic transmission.",
+	"If you experience symptoms of COVID-19, do not immediately head to the ER. Use CoronaTracker to monitor your symptoms and make a more informed decision",
+}
+
 var mongoURI = os.Getenv("MONGODB_URI")
 var twilioSID = os.Getenv("TWILIO_ACCOUNT_SID")
 var twilioAuthToken = os.Getenv("TWILIO_AUTH_TOKEN")
 var twilioPhoneNumber = os.Getenv("TWILIO_PHONE_NUMBER")
 
 var twilioURL string
-
-var notifications = [4]string{
-	"Did you know? COVID-19 was first detected in Wuhan City, Hubei Province, China.",
-	"Did you know? COVID-19 is not the same as typical coronaviruses commonly circulated amongst humans",
-	"Did you know? Social distancing (avoiding large crowds) is the undeniable best way to prevent the spread of COVID-19",
-	"If you experience symptoms of COVID-19, do not immediately head to the ER. Use CoronaTracker to monitor your symptoms and make a more informed decision",
-}
 
 type phoneNumber struct {
 	Number string `bson:"phoneNumber"`
