@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
 
@@ -129,6 +130,9 @@ func Handler(ctx context.Context) (string, error) {
 	}
 
 	defer cur.Close(ctx)
+
+	// For different seed on every execution
+	rand.Seed(time.Now().UnixNano())
 
 	// For each record, send a notification
 	for cur.Next(ctx) {
