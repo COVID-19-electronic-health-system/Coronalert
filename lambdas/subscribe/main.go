@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"regexp"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -82,6 +83,14 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 			Body:       err.Error(),
 			StatusCode: 500,
 		}, err
+	}
+
+	matched, err := regexp.MatchString(`^\+[1-9]\d{1,14}$`, requestBody.Number)
+	if err != nil || matched {
+		log.Println("invalid phone number")
+		return events.APIGatewayProxyResponse{
+			StatusCode: 400,
+		}, nil
 	}
 
 	document := bson.D{
