@@ -86,7 +86,14 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	}
 
 	matched, err := regexp.MatchString(`^\+[1-9]\d{1,14}$`, requestBody.Number)
-	if err != nil || matched {
+	if err != nil {
+		log.Println("error in validating phone number")
+		return events.APIGatewayProxyResponse{
+			Body:       err.Error(),
+			StatusCode: 500,
+		}, err
+	}
+	if matched {
 		log.Println("invalid phone number")
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
