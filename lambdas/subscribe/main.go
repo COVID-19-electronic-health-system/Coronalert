@@ -87,6 +87,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	document := bson.D{
 		{Key: "_id", Value: requestBody.Number},
 		{Key: "phoneNumber", Value: requestBody.Number},
+		{Key: "lastIndex", Value: 0},
 	}
 
 	phoneNumber := phoneNumber{}

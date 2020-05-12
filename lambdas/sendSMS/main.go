@@ -50,7 +50,8 @@ var twilioPhoneNumber = os.Getenv("TWILIO_PHONE_NUMBER")
 var twilioURL string
 
 type phoneNumber struct {
-	Number string `bson:"phoneNumber"`
+	Number    string `bson:"phoneNumber"`
+	LastIndex int    `bson:"lastIndex"`
 }
 
 func init() {
@@ -77,11 +78,11 @@ func decrypt(encrypted string) string {
 	return string(response.Plaintext[:])
 }
 
-func sendNotification(phoneNumber string) error {
+func sendNotification(phoneNumber string, lastIndex int) error {
 	msgData := url.Values{}
 	msgData.Set("To", phoneNumber)
 	msgData.Set("From", twilioPhoneNumber)
-	msgData.Set("Body", notifications[rand.Intn(len(notifications))])
+	msgData.Set("Body", notifications[lastIndex])
 	msgDataReader := *strings.NewReader(msgData.Encode())
 
 	httpClient := &http.Client{}
@@ -129,8 +130,6 @@ func Handler(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	defer cur.Close(ctx)
-
 	// For different seed on every execution
 	rand.Seed(time.Now().UnixNano())
 
@@ -143,9 +142,18 @@ func Handler(ctx context.Context) (string, error) {
 			log.Println(err)
 		}
 
-		err = sendNotification(phoneNumber.Number)
+		err = sendNotification(phoneNumber.Number, phoneNumber.LastIndex)
 		if err != nil {
 			log.Println(err)
+		}
+
+		err = phoneNumbersCollection.UpdateOne(ctx,
+			bson.M{"phoneNumber": phoneNumber.Number},
+			bson.D{
+				{"$set", bson.D{{"lastIndex", phoneNumber.LastIndex}}},
+			})()
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 
